@@ -5,10 +5,10 @@ import hashlib
 from pathlib import Path
 
 # Paths
-BASE_DIR = Path(__file__).parent.parent
-INPUT_JSON = BASE_DIR / "public" / "audios.json"
-OUTPUT_DIR = BASE_DIR / "public" / "audios_local"
-OUTPUT_JSON = BASE_DIR / "public" / "audios_local.json"
+BASE_DIR = Path(__file__).parent
+INPUT_JSON = BASE_DIR / "impostoraudiosoriginal.json"
+OUTPUT_DIR = BASE_DIR / "public" / "imposter_audio"
+OUTPUT_JSON = BASE_DIR / "public" / "imposter_audios.json"
 
 def get_filename(url):
     # Extract filename from URL or generate a hash if it's messy
@@ -58,7 +58,7 @@ def main():
             filename = get_filename(item["url"])
             dest_path = OUTPUT_DIR / filename
             if download_file(item["url"], dest_path):
-                new_item["url"] = f"/audios_local/{filename}"
+                new_item["url"] = f"/imposter_audio/{filename}"
             else:
                 new_item["url"] = item["url"] # Fallback to remote if download fails
 
@@ -68,7 +68,7 @@ def main():
                 m_dest_path = OUTPUT_DIR / m_filename
                 if download_file(mirror["url"], m_dest_path):
                     new_item["mirrors"].append({
-                        "url": f"/audios_local/{m_filename}",
+                        "url": f"/imposter_audio/{m_filename}",
                         "text": mirror["text"]
                     })
                 else:
