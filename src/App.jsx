@@ -4,6 +4,7 @@ import NoiseOverlay from './NoiseOverlay';
 export default function App() {
   const [input, setInput] = useState('');
   const [audios, setAudios] = useState(null);
+  const [queues, setQueues] = useState({});
   const [currentText, setCurrentText] = useState('');
   const audioRef = useRef(null);
   const playTimeoutRef = useRef(null);
@@ -14,6 +15,15 @@ export default function App() {
       .then(data => setAudios(data))
       .catch(err => console.error('Failed to load audios:', err));
   }, []);
+
+  const shuffle = (array) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
 
   const playAudioForGrade = (grade) => {
     if (!audios) return;
@@ -30,7 +40,17 @@ export default function App() {
 
     if (category && audios[category]) {
       const entries = audios[category];
-      const randomEntry = entries[Math.floor(Math.random() * entries.length)];
+      
+      let currentQueue = [...(queues[category] || [])];
+      
+      if (currentQueue.length === 0) {
+        currentQueue = shuffle([...Array(entries.length).keys()]);
+      }
+
+      const nextIndex = currentQueue.pop();
+      setQueues(prev => ({ ...prev, [category]: currentQueue }));
+
+      const randomEntry = entries[nextIndex];
       
       // Collect all possible URLs (main + mirrors)
       const possibleUrls = [randomEntry.url, ...randomEntry.mirrors.map(m => m.url)];
