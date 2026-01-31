@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import NoiseOverlay from './NoiseOverlay';
+import Tooltip from './Tooltip';
 
 export default function App() {
   const [input, setInput] = useState('');
@@ -10,6 +10,7 @@ export default function App() {
   const [currentText, setCurrentText] = useState('');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [isButtonHovering, setIsButtonHovering] = useState(false);
   const audioRef = useRef(null);
   const playTimeoutRef = useRef(null);
 
@@ -108,7 +109,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-4">
-      <NoiseOverlay intensity={2} opacity={0.2} />
+      <div 
+        className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.15] mix-blend-overlay"
+        style={{ backgroundImage: 'url(/noise-overlay.png)', backgroundRepeat: 'repeat' }}
+      />
       <img src="/murkoff.png" className="absolute top-10 left-10 size-20 opacity-30" />
 
       <audio 
@@ -123,7 +127,10 @@ export default function App() {
           </h1>
           <button 
             onClick={() => setImposterMode(prev => prev === 'NONE' ? 'ADDED' : prev === 'ADDED' ? 'ONLY' : 'NONE')}
-            className={`text-sm font-mono font-bold mb-8 tracking-widest uppercase border px-2 pt-0.5 transition-colors ${imposterMode === 'NONE' ? 'border-neutral-800 text-neutral-500' : imposterMode === 'ADDED' ? 'border-red-600 text-red-600' : 'bg-red-600 text-black border-red-600'}`}
+            onMouseEnter={() => setIsButtonHovering(true)}
+            onMouseLeave={() => setIsButtonHovering(false)}
+            onMouseMove={handleMouseMove}
+            className={`text-sm font-mono font-bold mb-8 tracking-widest uppercase border px-2 pt-0.5 transition-colors hover:cursor-pointer hover:scale-105 active:scale-95 ${imposterMode === 'NONE' ? 'border-neutral-800 text-neutral-500' : imposterMode === 'ADDED' ? 'border-red-600 text-red-600' : 'bg-red-600 text-black border-red-600'}`}
           >
             {imposterMode === 'NONE' ? 'NO IMPOSTERS' : imposterMode === 'ADDED' ? 'IMPOSTERS ADDED' : 'IMPOSTERS ONLY'}
           </button>
@@ -141,22 +148,18 @@ export default function App() {
           autoFocus
         />
 
-        {isHovering && (
-          <div 
-            className="fixed pointer-events-none bg-neutral-900/90 border border-neutral-800 px-3 py-1.5 text-neutral-500 text-xs font-mono z-50 whitespace-nowrap shadow-xl"
-            style={{ 
-              left: mousePos.x + 20, 
-              top: mousePos.y + 20 
-            }}
-          >
-            <span className={imposterMode !== 'NONE' ? 'text-red-600' : ''}>
-              A+ | A | A- | B+ | B | B- | C+ | C | C- | D+ | D | D-
-            </span>
-            {imposterMode !== 'ONLY' && (
-              <> | <span>F</span></>
-            )}
-          </div>
-        )}
+        <Tooltip mousePos={mousePos} show={isButtonHovering}>
+          Feel somewhat violent after that test? Try the Impostor Mode to feel the blood coursing through your body. On the EES, we have three modes: No Impostors, Imposters Added, and Imposters Only. Click to cycle between them.
+        </Tooltip>
+
+        <Tooltip mousePos={mousePos} show={isHovering}>
+          <span className={imposterMode !== 'NONE' ? 'text-red-600' : ''}>
+            A+ | A | A- | B+ | B | B- | C+ | C | C- | D+ | D | D-
+          </span>
+          {imposterMode !== 'ONLY' && (
+            <> | <span>F</span></>
+          )}
+        </Tooltip>
 
         <div className="min-h-[100px] mt-12 flex items-center justify-center">
           {currentText && (
